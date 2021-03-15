@@ -1,8 +1,9 @@
 <template>
-  <a-select :value="value" @change="onChangeValue" style="width: 100%;" :placeholder="placeholder">
-    <a-select-option :value="undefined">
-      Tất cả
-    </a-select-option>
+  <a-select :value="value"
+            @change="onChangeValue"
+            :allow-clear="true"
+            style="width: 100%;"
+            :placeholder="placeholder">
     <a-select-option :key="option.value" v-for="option in enumToOptions(enumObj)" :value="option.value">
       {{ $t(`${enumObj.constructor.name}.${option.label}`) }}
     </a-select-option>
@@ -19,7 +20,7 @@ export default {
   props: {
     value: Number,
     enumObj: Object,
-    placeholder: String
+    placeholder: String,
   },
   methods: {
     onChangeValue(val) {
