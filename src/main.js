@@ -6,6 +6,7 @@ import store from './store'
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
 import {i18n} from "@/services";
+import '@/services/libs';
 
 Vue.config.productionTip = false;
 Vue.use(Antd);
@@ -14,5 +15,5 @@ new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app')

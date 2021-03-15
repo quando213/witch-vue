@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-row id="filter">
+    <a-row id="filter" :gutter="[8,8]">
       <a-col :xs="24" :md="12" :lg="6">
         <a-input v-model="params.search" placeholder="Tìm kiếm">
           <a-icon slot="prefix" type="search"/>
@@ -12,33 +12,42 @@
                       placeholder="Lọc theo trạng thái"/>
       </a-col>
     </a-row>
+    <a-skeleton active v-if="!this.data" />
     <a-table :columns="columns"
              :data-source="data"
              rowKey="id"
              :pagination="false"
              :scroll="{x: true}"
-             @change="list">
+             @change="list"
+    v-else>
       <span slot="avatar" slot-scope="image"><a-avatar icon="user" :src="image"/></span>
       <span slot="name" slot-scope="text">{{ text }}</span>
       <span slot="customTitle">Name</span>
-      <span slot="statusTitle" slot-scope="status, user"
-            :style="{color: status === CommonStatus.ACTIVE ? 'green' : 'red'}">{{ user.status_title }}</span>
-      <span slot="action">
-      <a-button icon="edit" size="small"></a-button>
-      <a-divider type="vertical"/>
-      <a-button icon="delete" size="small" type="danger"></a-button>
-    </span>
+      <span slot="statusTitle" slot-scope="status, item"
+            :style="{color: status === CommonStatus.ACTIVE ? 'green' : 'red'}">{{ item.status_title }}</span>
+      <span slot="action" slot-scope="action, item">
+        <a-button icon="edit" size="small" @click="updateItem(item.id)"></a-button>
+        <a-divider type="vertical"/>
+        <a-popconfirm
+            :title="`Bạn chắc chắn muốn xoá user ${item.name}?`"
+            ok-text="OK"
+            cancel-text="Huỷ"
+            @confirm="deleteItem(item.id)"
+        >
+          <a-button icon="delete" size="small" type="danger"></a-button>
+        </a-popconfirm>
+      </span>
     </a-table>
     <CustomPagination v-model="meta" @change="onChangePage"/>
   </div>
 </template>
 
 <script>
-import {list} from "@/modules/users/service";
+import {list, deleteOne} from "@/modules/users/service";
 import {CommonMixin} from "@/services/mixins";
 import {params} from "@/modules/users/params";
 import {debounce} from 'lodash'
-import EnumSelector from "@/components/EnumSelector";
+import EnumSelector from "@/components/selectors/EnumSelector";
 import CustomPagination from "@/components/CustomPagination";
 
 const columns = [
@@ -48,7 +57,7 @@ const columns = [
   },
   {
     title: 'Ảnh đại diện',
-    dataIndex: 'avatar',
+    dataIndex: 'avatar_url',
     align: 'center',
     scopedSlots: {customRender: 'avatar'},
   },
@@ -76,7 +85,7 @@ export default {
   mixins: [CommonMixin],
   data() {
     return {
-      data: [],
+      data: undefined,
       columns,
       meta: {
         current_page: 1,
@@ -107,7 +116,19 @@ export default {
     },
     handleChangeParams: debounce(function (val) {
       this.list({...val, page: 1})
-    }, 300)
+    }, 300),
+    updateItem(id) {
+      this.$router.push({name: `userUpdate`, params: {id: id}});
+    },
+    async deleteItem(id) {
+      try {
+        await deleteOne(id);
+        this.data = this.data.filter(item => item.id !== id);
+        this.$message.success('Xoá user thành công');
+      } catch (e) {
+        console.log(e);
+      }
+    },
   },
   watch: {
     params: {
@@ -121,14 +142,6 @@ export default {
 </script>
 
 <style scoped>
-#filter {
-  margin-bottom: 20px;
-}
-
-#filter .ant-col {
-  padding: 3px;
-}
-
 .ant-table td {
   white-space: nowrap;
 }

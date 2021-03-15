@@ -9,4 +9,18 @@ const enumToOptions = (obj) => {
     return result;
 }
 
-export {enumToOptions};
+const getHeaders = () => {
+    return {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        accept: 'application/json'
+    }
+}
+
+const assignValuesToForm = (form, data) => {
+    Object.keys(form).forEach(key => {
+        form[key] = data[key];
+    })
+    return form;
+}
+
+export {enumToOptions, getHeaders, assignValuesToForm};
